@@ -1,22 +1,22 @@
+import { useRef } from 'react';
 import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RootStackParams } from '../../routes/StackNavigator';
-import { ButtonComponent } from '../components/Button.component';
 import { Modalize } from 'react-native-modalize';
-import { useEffect, useRef } from 'react';
 import { useDeleteFinancialProduct } from '../../application/hooks';
 import { Alert } from 'react-native';
+import { ButtonComponent } from '../components';
 
 
 
 export const ProductScreen = () => {
+  const modalizeRef = useRef<Modalize>(null);
   const params = useRoute<RouteProp<RootStackParams, 'Product'>>().params;
+  const navigator = useNavigation<NavigationProp<RootStackParams>>();
   const date_release = new Date(params.date_release).toLocaleDateString();
   const date_revision = new Date(params.date_revision).toLocaleDateString();
   const { deleteFinancialProduct, isDeletingFinancialProduct, isErrorDeletingFinancialProduct } = useDeleteFinancialProduct();
-  const navigator = useNavigation<NavigationProp<RootStackParams>>();
-  const modalizeRef = useRef<Modalize>(null);
- 
+
 
   const onOpen = () => {
     modalizeRef.current?.open();

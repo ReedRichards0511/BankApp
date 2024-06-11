@@ -1,12 +1,11 @@
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useGetFinancialProducts } from '../../application/hooks'
 import { type NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { type RootStackParams } from '../../routes/StackNavigator';
-import { useCallback, useEffect, useState } from 'react';
 import { GetAllProductsResponse } from '../../domain/products.interfaces';
-import { ProductItemComponent } from '../components/ProductItem.component';
-import { ButtonComponent } from '../components/Button.component';
-import { NotFoundProductComponent } from '../components/NotFoundProduct.component';
+import { ButtonComponent, NotFoundProductComponent, ProductItemComponent, SkeletonComponent } from '../components';
+
 
 export const AllProductsScreen = () => {
     const [search, setSearch] = useState('');
@@ -38,7 +37,25 @@ export const AllProductsScreen = () => {
         }, [])
     );
 
-    if (isLoadingFinancialProducts || isRefetchingFinancialProducts) return <Text>Loading...</Text>
+    if (isLoadingFinancialProducts || isRefetchingFinancialProducts) {
+        return (
+            <View style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: '#fff',
+                padding: 20,
+                gap: 10
+            }}>
+                {
+                    Array.from({ length: 10 }).map((_, index) => (
+                        <SkeletonComponent width={500} height={50} borderRadius={10}  key={index}/>
+                    ))
+                }
+               
+            </View>
+        )
+    }
 
     if (isErrorFinancialProducts) return <Text>Error</Text>
 
@@ -57,8 +74,8 @@ export const AllProductsScreen = () => {
                 />
             </View>
             {
-                products.length === 0? (
-                    <NotFoundProductComponent/>
+                products.length === 0 ? (
+                    <NotFoundProductComponent />
                 )
                     :
                     (

@@ -1,13 +1,12 @@
-import { Controller, useForm } from 'react-hook-form';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ButtonComponent } from '../components/Button.component';
 import { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import { formatDate } from '../../core/application/uitls';
-import { useCreateFinancialProduct } from '../../application/hooks/useCreateFinancialProduct.hook';
 import { NavigationProp, RouteProp, StackActions, useNavigation, useRoute } from '@react-navigation/native';
 import { RootStackParams } from '../../routes/StackNavigator';
-import { useUpdateFinancialProduct } from '../../application/hooks';
+import { useCreateFinancialProduct, useUpdateFinancialProduct } from '../../application/hooks';
+import { ButtonComponent } from '../components';
 
 
 interface NewProductForm {
@@ -22,6 +21,8 @@ interface NewProductForm {
 
 export const NewProductScreen = () => {
 
+  const params = useRoute<RouteProp<RootStackParams, 'EditProduct'>>().params;
+  const navigator = useNavigation<NavigationProp<RootStackParams>>();
   const { control, handleSubmit, formState: { errors }, setValue } = useForm<NewProductForm>();
   const [dateRelease, setDateRelease] = useState(new Date());
   const [dateRevision, setDateRevision] = useState(new Date());
@@ -29,8 +30,6 @@ export const NewProductScreen = () => {
   const [openRevision, setOpenRevision] = useState(false);
   const { createNewProduct, isErrorCreateProduct, isLoadingCreateProduct } = useCreateFinancialProduct();
   const { updateFinancialProduct, isErrorUpdateFinancialProduct, isLoadingUpdateFinancialProduct } = useUpdateFinancialProduct();
-  const params = useRoute<RouteProp<RootStackParams, 'EditProduct'>>().params;
-  const navigator = useNavigation<NavigationProp<RootStackParams>>();
 
   useEffect(() => {
     if (params) {
@@ -310,12 +309,13 @@ export const NewProductScreen = () => {
         </View>
         <View style={{ flexDirection: 'column', gap: 10, justifyContent: 'center', alignItems: 'center', paddingBottom: 20 }}>
           <ButtonComponent
-            title={isLoadingCreateProduct ? 'Creando...' : 'Enviar'}
+            title={isLoadingCreateProduct || isLoadingUpdateFinancialProduct ? 'Creando...' : 'Enviar'}
             handlePress={handleSubmit(
               params ? handleUpdateProduct : handleCreateNewProduct
             )}
             primaryColor='yellow'
             textColor='black'
+            disabled={isLoadingCreateProduct || isLoadingUpdateFinancialProduct}
           />
           <ButtonComponent
             title='Reiniciar'
