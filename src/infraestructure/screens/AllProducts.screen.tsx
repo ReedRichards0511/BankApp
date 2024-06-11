@@ -5,6 +5,7 @@ import { type NavigationProp, useNavigation, useFocusEffect } from '@react-navig
 import { type RootStackParams } from '../../routes/StackNavigator';
 import { GetAllProductsResponse } from '../../domain/products.interfaces';
 import { ButtonComponent, NotFoundProductComponent, ProductItemComponent, SkeletonComponent } from '../components';
+import { ErrorComponent } from '../components/Error.component';
 
 
 export const AllProductsScreen = () => {
@@ -57,7 +58,7 @@ export const AllProductsScreen = () => {
         )
     }
 
-    if (isErrorFinancialProducts) return <Text>Error</Text>
+    if (isErrorFinancialProducts) return <ErrorComponent />
 
     return (
         <View style={styles.mainContainer}>
