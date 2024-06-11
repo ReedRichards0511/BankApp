@@ -1,32 +1,44 @@
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useGetFinancialProducts } from '../../application/hooks'
-import { type NavigationProp, useNavigation } from '@react-navigation/native';
+import { type NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { type RootStackParams } from '../../routes/StackNavigator';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GetAllProductsResponse } from '../../domain/products.interfaces';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ProductItemComponent } from '../components/ProductItem.component';
 import { ButtonComponent } from '../components/Button.component';
+import { NotFoundProductComponent } from '../components/NotFoundProduct.component';
 
 export const AllProductsScreen = () => {
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState<GetAllProductsResponse[]>([]);
     const navigation = useNavigation<NavigationProp<RootStackParams>>();
-    const { financialProducts, isLoadingFinancialProducts, isErrorFinancialProducts } = useGetFinancialProducts();
+    const { financialProducts, isLoadingFinancialProducts, isErrorFinancialProducts, isRefetchingFinancialProducts, refetchFinancialProducts } = useGetFinancialProducts();
 
 
     const searchProduct = (search: string) => {
-        const filteredProducts = financialProducts.filter(product => product.name.toLowerCase().includes(search.toLowerCase()));
+        const filteredProducts = financialProducts.filter(product =>
+            product.name.toLowerCase().includes(search.toLowerCase())
+        );
         setProducts(filteredProducts);
     }
 
     useEffect(() => {
-        setProducts(financialProducts);
-    }, [])
+        if (financialProducts.length > 0) {
+            setProducts(financialProducts);
+        }
+    }, [financialProducts]);
 
+    useEffect(() => {
+        searchProduct(search);
+    }, [search]);
 
-    if (isLoadingFinancialProducts) return <Text>Loading...</Text>
+    useFocusEffect(
+        useCallback(() => {
+            refetchFinancialProducts();
+        }, [])
+    );
+
+    if (isLoadingFinancialProducts || isRefetchingFinancialProducts) return <Text>Loading...</Text>
 
     if (isErrorFinancialProducts) return <Text>Error</Text>
 
@@ -41,24 +53,34 @@ export const AllProductsScreen = () => {
                         setSearch(search);
                         searchProduct(search);
                     }}
+                    editable={financialProducts.length > 0 ? true : false}
                 />
             </View>
-            <View style={styles.listContainer}>
-                <FlatList
-                    data={products}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({ item }) => (
-                        <ProductItemComponent item={item} onNext={() => navigation.navigate('Product', item)} />
-                    )}
-                />
-                <ButtonComponent  
-                title='Agregar'
-                handlePress={() => navigation.navigate('NewProduct')}
-                primaryColor='yellow'
-                textColor='black'
-            />
-            </View>
-            
+            {
+                products.length === 0? (
+                    <NotFoundProductComponent/>
+                )
+                    :
+                    (
+
+                        <View style={styles.listContainer}>
+                            <FlatList
+                                data={products}
+                                keyExtractor={(item) => item.id.toString()}
+                                renderItem={({ item }) => (
+                                    <ProductItemComponent item={item} onNext={() => navigation.navigate('Product', item)} />
+                                )}
+                            />
+                            <ButtonComponent
+                                title='Agregar'
+                                handlePress={() => navigation.navigate('NewProduct')}
+                                primaryColor='yellow'
+                                textColor='black'
+                            />
+                        </View>
+                    )
+            }
+
         </View>
     )
 }
